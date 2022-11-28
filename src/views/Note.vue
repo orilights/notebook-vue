@@ -130,6 +130,7 @@ marked.setOptions({
 
 onMounted(async () => {
     store.networkLoading = true
+    leftPanelShow.value = (localStorage.getItem('leftPanelShow') || 'true') == 'true'
     const result = await UserDataGet(store.userId)
     const json = JSON.parse(result.msg)
     noteList.value = json['data']['noteList'] || []
@@ -145,6 +146,8 @@ onMounted(async () => {
     }
     store.networkLoading = false
 })
+
+watch(leftPanelShow, () => { localStorage.setItem('leftPanelShow', leftPanelShow.value ? 'true' : 'false') })
 
 function blockSelect(index: number) {
     currentSelectedBlock.value = index
