@@ -48,7 +48,7 @@ export async function UserRegister(userId: string, userName: string, userPwd: st
     }
 
     // 请求
-    const res = await post(apiUrl, { id: userId, name: userName, password: userPwd })
+    const res = await post(apiUrl, { id: userId, name: userName, password: passwordHash(userPwd, userId) })
     if (res.code == 0) {
         result.code = 0
         result.msg = '注册成功'
