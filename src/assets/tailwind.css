@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-bold;
+  }
+  h1 {
+    @apply text-2xl my-4;
+  }
+  h2 {
+    @apply text-xl my-3;
+  }
+  h3 {
+    @apply text-lg my-2;
+  }
+  ol {
+    @apply list-decimal list-inside;
+  }
+  ul {
+    @apply list-disc list-inside;
+  }
+  table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+    display: block;
+    overflow-x: auto;
+  }
+  tr {
+    border-top: 1px solid #dfe2e5;
+  }
+  td,
+  th {
+    border: 1px solid #dfe2e5;
+    padding: 0.6em 1em;
+  }
+  tr:nth-child(2n) {
+    background-color: #f6f8fa;
+  }
+}

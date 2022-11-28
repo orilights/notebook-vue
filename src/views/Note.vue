@@ -1,0 +1,283 @@
+<template>
+    <div class="flex flex-row h-full">
+        <NoteLeftPanel :class="leftPanelShow ? '' : '!w-0'">
+            <NoteCtrlButton class="absolute top-5 right-4" @click="leftPanelShow = false">
+                <IconDoubleLeft class="w-4 h-4" />
+            </NoteCtrlButton>
+            <div
+                class="mt-[50px] w-full bg-gray-200 hover:bg-gray-300 p-[8px] rounded-md cursor-text flex items-center space-x-1">
+                <IconSearch class="w-4 h-4" />
+                <input type="text" class="bg-transparent outline-none text-sm" placeholder="搜索">
+            </div>
+            <div class="my-2 font-bold">
+                笔记列表
+                <NoteCtrlButton @click="noteAdd">
+                    <IconAdd class="w-4 h-4" />
+                </NoteCtrlButton>
+                <NoteCtrlButton @click="noteDelete">
+                    <IconTrash class="w-4 h-4" />
+                </NoteCtrlButton>
+            </div>
+            <div
+                class="bg-gray-200 rounded-md flex-grow overflow-y-scroll  scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 scrollbar-track-gray-200 scrollbar-track-rounded-md scrollbar-thumb-rounded-md">
+                <div class="px-4 py-2 hover:px-6 hover:bg-gray-300 transition-all" v-for="note, index in noteList"
+                    :class="note == currentNoteId ? 'px-6 bg-gray-300' : ''" @click="noteSwitch(index)">
+                    <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
+                        {{ note }}
+                    </p>
+                </div>
+            </div>
+        </NoteLeftPanel>
+        <div class="w-full h-full flex flex-col">
+            <div
+                class="h-[60px] flex-shrink-0 px-5 bg-white border-b flex items-center overflow-x-auto overflow-y-hidden">
+                <div class="flex flex-row items-center">
+                    <NoteCtrlButton v-if="!leftPanelShow" @click="leftPanelShow = true">
+                        <IconDoubleRight class="w-4 h-4" />
+                    </NoteCtrlButton>
+                    <div class="font-bold min-w-[100px] mx-4 outline-none" contenteditable
+                        v-html="currentNoteData.title"
+                        @input="currentNoteData.title = ($event.target as HTMLElement).innerHTML"></div>
+                    <!-- 笔记操作 -->
+                    <NoteIconButton>
+                        <IconExport class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton>
+                        <IconImport class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockAdd(-1)">
+                        <IconAdd class="w-4 h-4" />
+                    </NoteIconButton>
+                    <div class="w-6"></div>
+                    <!-- Block操作 -->
+                    <NoteIconButton @click="blockAdd(currentSelectedBlock - 1)">
+                        <IconAddUp class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockAdd(currentSelectedBlock)">
+                        <IconAddDown class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockMove(currentSelectedBlock, -1)">
+                        <IconUp class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockMove(currentSelectedBlock, 1)">
+                        <IconDown class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockDelete(currentSelectedBlock)">
+                        <IconTrash class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="infoPanelShow = !infoPanelShow">
+                        <IconInfo class="w-4 h-4" />
+                    </NoteIconButton>
+                    <div>Block：{{ currentSelectedBlock }}</div>
+                </div>
+            </div>
+            <NoteContainer>
+                <div v-for="block, index in currentNoteData.blocks" class="mt-4">
+                    <NoteBlock :block="block" @selected="blockSelect(index)" @data-change="noteSave"
+                        :class="currentSelectedBlock == index ? 'border-gray-300' : ''" />
+                </div>
+            </NoteContainer>
+        </div>
+    </div>
+
+</template>
+
+<script setup lang="ts">
+import NoteContainer from '@/components/Layout/NoteContainer.vue';
+import NoteIconButton from '@/components/Button/NoteIconButton.vue';
+import router from '@/router';
+import { useStore } from '@/stores';
+import Cookies from 'js-cookie';
+import { onMounted, ref, toRefs, watch } from 'vue';
+import { useToast } from 'vue-toastification';
+import { v4 as uuid4 } from 'uuid'
+import hljs from 'highlight.js'
+import { marked } from 'marked'
+import { BlockData } from '@/core/types';
+import NoteBlock from '@/components/NoteBlock.vue';
+import NoteLeftPanel from '@/components/Layout/NoteLeftPanel.vue';
+import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
+import IconSearch from '@/components/Icon/IconSearch.vue'
+import IconAdd from '@/components/Icon/IconAdd.vue'
+import IconDoubleLeft from '@/components/Icon/IconDoubleLeft.vue'
+import IconDoubleRight from '@/components/Icon/IconDoubleRight.vue'
+import IconTrash from '@/components/Icon/IconTrash.vue';
+import IconExport from '@/components/Icon/IconExport.vue';
+import IconImport from '@/components/Icon/IconImport.vue';
+import IconUp from '@/components/Icon/IconUp.vue';
+import IconDown from '@/components/Icon/IconDown.vue';
+import IconInfo from '@/components/Icon/IconInfo.vue';
+import IconAddUp from '@/components/Icon/IconAddUp.vue';
+import IconAddDown from '@/components/Icon/IconAddDown.vue';
+import { UserDataGet, UserDataUpdate } from '@/api/user';
+import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
+
+const store = useStore()
+const toast = useToast()
+
+const { noteList, currentNoteId, currentNoteData } = toRefs(store)
+const currentSelectedBlock = ref(0)
+const leftPanelShow = ref(false)
+const infoPanelShow = ref(false)
+
+marked.setOptions({
+    highlight: function (code, lang) {
+        const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+        return hljs.highlight(code, { language }).value;
+    },
+    langPrefix: 'hljs language-'
+})
+
+onMounted(async () => {
+    store.networkLoading = true
+    const result = await UserDataGet(store.userId)
+    const json = JSON.parse(result.msg)
+    noteList.value = json['data']['noteList'] || []
+    currentNoteId.value = json['data']['currentNoteId'] || ''
+    if (noteList.value.length == 0) {
+        await noteAdd()
+    }
+    const result1 = await NoteGet(currentNoteId.value)
+    if (result1.code == 0) {
+        currentNoteData.value = JSON.parse(result1.msg)['data']
+    } else {
+        currentNoteData.value = { title: "笔记获取失败", tag: [], blocks: [] }
+    }
+    store.networkLoading = false
+})
+
+function blockSelect(index: number) {
+    currentSelectedBlock.value = index
+}
+
+function blockMove(index: number, direction: number) {
+    if ((index + direction) < 0) {
+        toast.warning('当前位置不可上移')
+        return
+    }
+    if ((index + direction) >= currentNoteData.value.blocks.length) {
+        toast.warning('当前位置不可下移')
+        return
+    }
+
+    currentSelectedBlock.value = index + direction
+    let tmp = currentNoteData.value.blocks[index]
+    currentNoteData.value.blocks[index] = currentNoteData.value.blocks[index + direction]
+    currentNoteData.value.blocks[index + direction] = tmp
+    noteSave()
+}
+
+function blockAdd(index: number) {
+    let newBlockData: BlockData = {
+        blkType: 'Markdown',
+        blkContent: '写点什么',
+        blkAuthor: '匿名',
+        blkCreateTime: Date.now(),
+        blkLastEditTime: Date.now()
+    }
+    if (index == -1) {
+        currentNoteData.value.blocks.splice(0, 0, newBlockData)
+        currentSelectedBlock.value = 0
+    } else {
+        currentNoteData.value.blocks.splice(index + 1, 0, newBlockData)
+        currentSelectedBlock.value = index + 1
+    }
+    noteSave()
+}
+
+function blockDelete(index: number) {
+    if (index <= currentSelectedBlock.value && index != 0) {
+        currentSelectedBlock.value--
+    }
+    currentNoteData.value.blocks.splice(index, 1)
+
+    if (currentNoteData.value.blocks.length == 0) {
+        blockAdd(0)
+    }
+    noteSave()
+}
+
+async function noteAdd() {
+    let newNoteId = uuid4()
+    noteList.value.push(newNoteId)
+    currentNoteId.value = newNoteId
+
+    store.networkLoading = true
+    await NoteCreate(currentNoteId.value, JSON.parse(await (await fetch('/template/new-note-template.json')).text()))
+    await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
+    const result = await NoteGet(currentNoteId.value)
+    if (result.code == 0) {
+        currentNoteData.value = JSON.parse(result.msg)['data']
+    } else {
+        currentNoteData.value = { title: "笔记获取失败", tag: [], blocks: [] }
+    }
+    store.networkLoading = false
+}
+
+async function noteDelete() {
+    let index = noteList.value.indexOf(currentNoteId.value)
+    let toDelNote = currentNoteId.value
+    if (index + 1 == noteList.value.length) {
+        currentNoteId.value = noteList.value[index - 1]
+    } else {
+        currentNoteId.value = noteList.value[index + 1]
+    }
+    noteList.value.splice(index, 1)
+    if (noteList.value.length == 0) {
+        noteAdd()
+    }
+
+    store.networkLoading = true
+    await NoteDelete(toDelNote)
+    await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
+    const result = await NoteGet(currentNoteId.value)
+    if (result.code == 0) {
+        currentNoteData.value = JSON.parse(result.msg)['data']
+    } else {
+        currentNoteData.value = { title: "笔记获取失败", tag: [], blocks: [] }
+    }
+    store.networkLoading = false
+}
+
+async function noteSwitch(index: number) {
+    let newNoteId = noteList.value[index]
+    currentNoteId.value = newNoteId
+    store.networkLoading = true
+    await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
+    const result = await NoteGet(currentNoteId.value)
+    if (result.code == 0) {
+        currentNoteData.value = JSON.parse(result.msg)['data']
+    } else {
+        currentNoteData.value = { title: "笔记获取失败", tag: [], blocks: [] }
+    }
+    store.networkLoading = false
+}
+
+async function noteSave() {
+    store.networkLoading = true
+    const result = await NoteSync(currentNoteId.value, currentNoteData.value)
+    if (result.code == 0) {
+        // toast.success('笔记同步成功')
+    } else if (result.code = 2) {
+        toast.warning(result.msg)
+    } else if (result.code = 3) {
+        toast.error(result.msg)
+    }
+    store.networkLoading = false
+    console.log('save note ' + currentNoteId.value);
+}
+
+function userLogout() {
+    store.login = false
+    store.userId = ''
+    store.userName = ''
+    Cookies.remove('login')
+    Cookies.remove('userid')
+    Cookies.remove('username')
+    Cookies.remove('token')
+    toast.success('注销成功')
+    router.push('/login')
+}
+
+
+</script>
