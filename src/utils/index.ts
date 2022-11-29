@@ -27,3 +27,15 @@ export function getRandomString(len: number) {
 export function passwordHash(pwd: string, salt: string): string {
     return cryptojs.PBKDF2(pwd, cryptojs.MD5(salt), { keySize: 8, iterations: 5 }).toString()
 }
+
+export function timeFormat(timestamp: number) {
+    let date = new Date(timestamp);
+    let result = ''
+    result += date.getFullYear() + '-';
+    result += (date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1) + '-';
+    result += (date.getDate() < 10 ? '0' + date.getDate() : date.getDate()) + ' ';
+    result += (date.getHours() < 10 ? '0' + date.getHours() : date.getHours()) + ':';
+    result += (date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes()) + ':';
+    result += (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
+    return result
+}

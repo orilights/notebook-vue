@@ -1,4 +1,4 @@
-import { NoteData, RequestResult } from "@/core/types"
+import { BlockData, NoteData, RequestResult } from "@/core/types"
 import { get, http_delete, patch, post } from "@/utils/requests"
 
 const apiUrl = 'https://db-api.amarea.cn/notes/'
@@ -34,7 +34,7 @@ export async function NoteGet(noteId: string): Promise<RequestResult> {
     return result
 }
 
-export async function NoteCreate(noteId: string, noteData: NoteData): Promise<RequestResult> {
+export async function NoteCreate(noteId: string, noteData: BlockData[]): Promise<RequestResult> {
     // 定义返回数据
     let result: RequestResult = {
         code: -1,
@@ -64,7 +64,7 @@ export async function NoteCreate(noteId: string, noteData: NoteData): Promise<Re
     return result
 }
 
-export async function NoteSync(noteId: string, noteData: NoteData): Promise<RequestResult> {
+export async function NoteSync(noteId: string, noteData: BlockData[]): Promise<RequestResult> {
     // 定义返回数据
     let result: RequestResult = {
         code: -1,

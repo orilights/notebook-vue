@@ -1,20 +1,21 @@
 export interface UserData {
-    noteList: String[],
-    currentNoteId: String
+    noteList: {
+        [id: string]: NoteData
+    },
+    currentNoteId: string
 }
 
 export interface BlockData {
-    blkType: String,
-    blkContent: String,
-    blkAuthor: String,
-    blkCreateTime: Number,
-    blkLastEditTime: Number
+    blkType: string,
+    blkContent: string,
+    blkAuthor: string,
+    blkCreateTime: number,
+    blkLastEditTime: number
 }
 
 export interface NoteData {
-    title: String,
-    tag: String[],
-    blocks: BlockData[]
+    tag: string[]
+    title: string
 }
 
 export interface RequestResult {
