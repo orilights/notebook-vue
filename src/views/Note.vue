@@ -119,6 +119,7 @@ import { UserDataGet, UserDataUpdate } from '@/api/user';
 import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
 import NoteNormalButton from '@/components/Button/NoteNormalButton.vue';
 import { timeFormat } from '@/utils';
+import NProgress from 'nprogress'
 
 const store = useStore()
 const toast = useToast()
@@ -141,17 +142,17 @@ onMounted(async () => {
     leftPanelShow.value = (localStorage.getItem('leftPanelShow') || 'true') == 'true'
     const result = await UserDataGet(store.userId)
     const json = JSON.parse(result.msg)
+
+    // 判断数据字段是否存在
     if (Object.hasOwn(json, 'data')) {
         noteList.value = json['data']['noteList']
         currentNoteId.value = json['data']['currentNoteId']
     } else {
         noteList.value = {}
     }
-    console.log(1);
     if (Object.keys(noteList.value).length == 0) {
         await noteAdd()
     }
-    console.log(2);
     const result1 = await NoteGet(currentNoteId.value)
     if (result1.code == 0) {
         currentNoteData.value = JSON.parse(result1.msg)['data']
@@ -266,7 +267,7 @@ async function noteDelete() {
 async function noteSwitch(index: number) {
     let newNoteId = Object.keys(noteList.value)[index]
     currentNoteId.value = newNoteId
-    store.networkLoading = true
+    NProgress.start()
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteGet(currentNoteId.value)
     if (result.code == 0) {
@@ -274,11 +275,11 @@ async function noteSwitch(index: number) {
     } else {
         currentNoteData.value = []
     }
-    store.networkLoading = false
+    NProgress.done()
 }
 
 async function noteSave() {
-    store.networkLoading = true
+    NProgress.start()
     const result = await NoteSync(currentNoteId.value, currentNoteData.value)
     if (result.code == 0) {
         // toast.success('笔记同步成功')
@@ -287,7 +288,7 @@ async function noteSave() {
     } else if (result.code = 3) {
         toast.error(result.msg)
     }
-    store.networkLoading = false
+    NProgress.done()
     console.log('save note ' + currentNoteId.value);
 }
 
@@ -298,7 +299,6 @@ function userLogout() {
     Cookies.remove('login')
     Cookies.remove('userid')
     Cookies.remove('username')
-    Cookies.remove('token')
     toast.success('注销成功')
     router.push('/login')
 }

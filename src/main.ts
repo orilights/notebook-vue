@@ -1,9 +1,10 @@
 import '@/assets/tailwind.css'
-import "vue-toastification/dist/index.css"
-import "highlight.js/styles/github-dark.css"
+import 'vue-toastification/dist/index.css'
+import 'nprogress/nprogress.css'
+import 'highlight.js/styles/github-dark.css'
 import App from '@/App.vue'
 import router from '@/router'
-import Toast from "vue-toastification";
+import Toast from 'vue-toastification'
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
