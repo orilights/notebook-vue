@@ -1,11 +1,11 @@
 <template>
-    <div class="mb-1 px-5 py-3 rounded-xl box-border border-2 border-transparent transition-all duration-300 hover:shadow-[0_2px_12px_0_rgba(0,0,0,0.2)]"
+    <div class="mb-1 px-5 py-3 rounded-xl box-border border-2 border-transparent transition-all duration-300 hover:shadow-[0_2px_12px_0_rgba(0,0,0,0.2)] dark:hover:shadow-none dark:hover:bg-slate-50/5"
         @click="$emit('selected')" @dblclick="changeMode">
         <div :class="!editMode ? '' : 'hidden'" class="rendered" v-html="marked.parse(block.blkContent as string)">
         </div>
         <div :class="editMode ? '' : 'hidden'">
             <div class="font-bold">编辑模式 <span class="text-gray-400">(点击编辑框外部或双击退出)</span></div>
-            <textarea class="w-full" v-model="(block.blkContent as string)" ref="editbox" @input="resetHeight"
+            <textarea class="w-full bg-transparent" v-model="(block.blkContent as string)" ref="editbox" @input="resetHeight"
                 @focusout="focusOut"></textarea>
         </div>
     </div>
@@ -99,11 +99,11 @@ textarea {
 }
 
 code {
-    @apply inline-block p-[2px] mx-[1px] my-0 bg-yellow-100/70 rounded-md leading-3;
+    @apply inline-block p-[2px] mx-[1px] my-0 bg-yellow-100/70 dark:bg-yellow-100/30 rounded-md leading-3;
 }
 
 code.hljs {
-    @apply rounded-xl leading-normal;
+    @apply rounded-xl leading-normal dark:bg-[#0d1117];
 }
 
 .rendered a {

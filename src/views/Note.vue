@@ -5,7 +5,7 @@
                 <IconDoubleLeft class="w-4 h-4" />
             </NoteCtrlButton>
             <div
-                class="mt-[50px] w-full bg-gray-200 hover:bg-gray-300 p-[8px] rounded-md cursor-text flex items-center space-x-1">
+                class="mt-[50px] w-full bg-gray-200 dark:bg-[#242424] hover:bg-gray-300 dark:hover:bg-gray-800 p-[8px] rounded-md cursor-text flex items-center space-x-1">
                 <IconSearch class="w-4 h-4" />
                 <input type="text" class="bg-transparent outline-none text-sm" placeholder="搜索">
             </div>
@@ -19,10 +19,10 @@
                 </NoteCtrlButton>
             </div>
             <div
-                class="bg-gray-200 rounded-md flex-grow overflow-y-scroll  scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400 scrollbar-track-gray-200 scrollbar-track-rounded-md scrollbar-thumb-rounded-md">
-                <div class="px-4 py-2 hover:px-6 hover:bg-gray-300 transition-all"
+                class="bg-gray-200 dark:bg-[#242424] rounded-md flex-grow overflow-y-scroll  scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-transparent scrollbar-track-rounded-md scrollbar-thumb-rounded-md">
+                <div class="px-4 py-2 hover:px-6 hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
                     v-for="note, index in Object.values(noteList)"
-                    :class="Object.keys(noteList)[index] == currentNoteId ? 'px-6 bg-gray-300' : ''"
+                    :class="Object.keys(noteList)[index] == currentNoteId ? 'px-6 bg-gray-300 dark:bg-white/10' : ''"
                     @click="noteSwitch(index)">
                     <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
                         {{ note.title }}
@@ -31,69 +31,67 @@
             </div>
         </NoteLeftPanel>
         <div class="w-full h-full flex flex-col">
-            <div
-                class="h-[60px] flex-shrink-0 px-5 bg-white border-b flex items-center overflow-x-auto overflow-y-hidden">
-                <div class="w-full flex flex-row items-center justify-between space-x-4">
-                    <div class="flex">
-                        <NoteCtrlButton v-if="!leftPanelShow" @click="leftPanelShow = true">
-                            <IconDoubleRight class="w-4 h-4" />
-                        </NoteCtrlButton>
-                        <div class="mr-4 relative">
-                            <div class="font-bold px-2 min-w-[60px]" style="visibility: hidden;">{{
-                                    noteList[currentNoteId].title
-                            }}</div>
-                            <input type="text" class="absolute left-0 top-0 font-bold w-full outline-none px-2"
-                                maxlength="20" v-model="noteList[currentNoteId].title" @focusout="noteSave">
-                        </div>
-                        <NoteIconButton>
-                            <IconExport class="w-4 h-4" @click="noteExport" />
-                        </NoteIconButton>
-                        <NoteIconButton>
-                            <IconImport class="w-4 h-4" @click="noteImport" />
-                        </NoteIconButton>
+            <NoteTopMenu>
+                <div class="flex flex-shrink-0">
+                    <NoteCtrlButton v-if="!leftPanelShow" @click="leftPanelShow = true">
+                        <IconDoubleRight class="w-4 h-4" />
+                    </NoteCtrlButton>
+                    <div class="mr-4 relative flex-shrink-0">
+                        <div class="font-bold px-2 min-w-[60px]" style="visibility: hidden;">{{
+                                noteList[currentNoteId].title
+                        }}</div>
+                        <input type="text"
+                            class="absolute left-0 top-0 font-bold w-full outline-none px-2 bg-transparent"
+                            maxlength="20" v-model="noteList[currentNoteId].title" @focusout="noteSave">
                     </div>
-                    <div class="flex">
-                        <NoteIconButton @click="blockAdd(currentSelectedBlock - 1)">
-                            <IconAddUp class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="blockAdd(currentSelectedBlock)">
-                            <IconAddDown class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="blockMove(currentSelectedBlock, -1)">
-                            <IconUp class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="blockMove(currentSelectedBlock, 1)">
-                            <IconDown class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="blockDelete(currentSelectedBlock)">
-                            <IconTrash class="w-4 h-4" />
-                        </NoteIconButton>
-                    </div>
-                    <div class="flex">
-                        <NoteIconButton v-if="!isDarkMode" @click="(isDarkMode = true)">
-                            <IconSun class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton v-if="isDarkMode" @click="(isDarkMode = false)">
-                            <IconMoon class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="infoPanelShow = !infoPanelShow">
-                            <IconInfo class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton v-if="!isFullscreen" @click="enterFullscreen">
-                            <IconFullscreen class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton v-if="isFullscreen" @click="exitFullscreen">
-                            <IconFullscreenExit class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton>
-                            <IconUser class="w-4 h-4" />
-                        </NoteIconButton>
-                        <NoteIconButton @click="userLogout">
-                            <IconLogout class="w-4 h-4" />
-                        </NoteIconButton>
-                    </div>
+                    <NoteIconButton>
+                        <IconExport class="w-4 h-4" @click="noteExport" />
+                    </NoteIconButton>
+                    <NoteIconButton>
+                        <IconImport class="w-4 h-4" @click="noteImport" />
+                    </NoteIconButton>
                 </div>
-            </div>
+                <div class="flex">
+                    <NoteIconButton @click="blockAdd(currentSelectedBlock - 1)">
+                        <IconAddUp class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockAdd(currentSelectedBlock)">
+                        <IconAddDown class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockMove(currentSelectedBlock, -1)">
+                        <IconUp class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockMove(currentSelectedBlock, 1)">
+                        <IconDown class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="blockDelete(currentSelectedBlock)">
+                        <IconTrash class="w-4 h-4" />
+                    </NoteIconButton>
+                </div>
+                <div class="flex">
+                    <NoteIconButton v-if="!isDarkMode" @click="(isDarkMode = true)">
+                        <IconSun class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton v-if="isDarkMode" @click="(isDarkMode = false)">
+                        <IconMoon class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="infoPanelShow = !infoPanelShow">
+                        <IconInfo class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton v-if="!isFullscreen" @click="enterFullscreen">
+                        <IconFullscreen class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton v-if="isFullscreen" @click="exitFullscreen">
+                        <IconFullscreenExit class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton>
+                        <IconUser class="w-4 h-4" />
+                    </NoteIconButton>
+                    <NoteIconButton @click="userLogout">
+                        <IconLogout class="w-4 h-4" />
+                    </NoteIconButton>
+                </div>
+            </NoteTopMenu>
             <NoteInfoPanel v-show="infoPanelShow" class="animation-in">
                 <NoteCtrlButton class="absolute top-4 right-4">
                     <IconClose class="w-4 h-4" @click="(infoPanelShow = false)" />
@@ -115,7 +113,7 @@
             <NoteContainer>
                 <div v-for="block, index in currentNoteData" class="mt-4">
                     <NoteBlock :block="block" @selected="blockSelect(index)" @data-change="noteSave"
-                        :class="currentSelectedBlock == index ? 'border-gray-300' : ''" />
+                        :class="currentSelectedBlock == index ? 'border-gray-300 dark:border-slate-50/20' : ''" />
                 </div>
                 <div class="h-10"></div>
             </NoteContainer>
@@ -165,18 +163,18 @@ import { useStore } from '@/stores';
 import { UserDataGet, UserDataUpdate } from '@/api/user';
 import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
 import { copyToClipboard, timeFormat } from '@/utils';
+import NoteTopMenu from '@/components/Layout/NoteTopMenu.vue';
 
 const store = useStore()
 const toast = useToast()
 
-const { noteList, currentNoteId, currentNoteData } = toRefs(store)
+const { noteList, currentNoteId, currentNoteData, isDarkMode } = toRefs(store)
 const currentSelectedBlock = ref(0)
 
 const leftPanelShow = ref(false)
 const infoPanelShow = ref(false)
 
 const isFullscreen = ref(false)
-const isDarkMode = ref(false)
 
 marked.setOptions({
     highlight: function (code, lang) {

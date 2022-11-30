@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-[100vw] h-[100vh]">
+  <div class="relative w-[100vw] h-[100vh]" :class="isDarkMode ? 'dark' : ''">
     <div v-if="networkLoading"
       class="absolute w-full h-full flex items-center justify-center z-40 bg-white bg-opacity-80 select-none back">
       <img class="w-20 h-20" src="./assets/loading_black.svg">
@@ -9,12 +9,22 @@
 </template>
 
 <script setup lang="ts">
-import { toRefs } from 'vue';
+import { onMounted, toRefs, watch } from 'vue';
 import { useStore } from '@/stores';
 
 const store = useStore()
 
-const { networkLoading } = toRefs(store)
+const { networkLoading, isDarkMode } = toRefs(store)
+
+watch(isDarkMode, () => {
+  localStorage.setItem('darkMode', String(isDarkMode.value))
+})
+
+onMounted(() => {
+  if ((localStorage.getItem('darkMode') || 'false') == 'true') {
+    isDarkMode.value = true
+  }
+})
 
 </script>
 

@@ -37,10 +37,9 @@
   }
   td,
   th {
-    border: 1px solid #dfe2e5;
-    padding: 0.6em 1em;
+    @apply border border-[#dfe2e5] dark:border-gray-600 px-4 py-2;
   }
   tr:nth-child(2n) {
-    background-color: #f6f8fa;
+    @apply bg-[#f6f8fa] dark:bg-slate-50/5
   }
 }
