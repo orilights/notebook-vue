@@ -33,49 +33,85 @@
         <div class="w-full h-full flex flex-col">
             <div
                 class="h-[60px] flex-shrink-0 px-5 bg-white border-b flex items-center overflow-x-auto overflow-y-hidden">
-                <div class="flex flex-row items-center">
-                    <NoteCtrlButton v-if="!leftPanelShow" @click="leftPanelShow = true">
-                        <IconDoubleRight class="w-4 h-4" />
-                    </NoteCtrlButton>
-                    <div class="font-bold min-w-[100px] mx-4 outline-none" contenteditable
-                        v-html="noteList[currentNoteId].title"
-                        @input="noteList[currentNoteId].title = ($event.target as HTMLElement).innerHTML"></div>
-                    <!-- 笔记操作 -->
-                    <NoteIconButton>
-                        <IconExport class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton>
-                        <IconImport class="w-4 h-4" />
-                    </NoteIconButton>
-                    <!-- <NoteIconButton @click="blockAdd(-1)">
-                        <IconAdd class="w-4 h-4" />
-                    </NoteIconButton> -->
-                    <div class="w-6"></div>
-                    <!-- Block操作 -->
-                    <NoteIconButton @click="blockAdd(currentSelectedBlock - 1)">
-                        <IconAddUp class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton @click="blockAdd(currentSelectedBlock)">
-                        <IconAddDown class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton @click="blockMove(currentSelectedBlock, -1)">
-                        <IconUp class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton @click="blockMove(currentSelectedBlock, 1)">
-                        <IconDown class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton @click="blockDelete(currentSelectedBlock)">
-                        <IconTrash class="w-4 h-4" />
-                    </NoteIconButton>
-                    <NoteIconButton @click="infoPanelShow = !infoPanelShow">
-                        <IconInfo class="w-4 h-4" />
-                    </NoteIconButton>
-                    <div>Block：{{ currentSelectedBlock }}</div>
-                    <div>创建时间：{{ timeFormat(currentNoteData[currentSelectedBlock].blkCreateTime) }}</div>
-                    <div>最后编辑：{{ timeFormat(currentNoteData[currentSelectedBlock].blkLastEditTime) }}</div>
-                    <NoteNormalButton @click="userLogout">退出登录</NoteNormalButton>
+                <div class="w-full flex flex-row items-center justify-between space-x-4">
+                    <div class="flex">
+                        <NoteCtrlButton v-if="!leftPanelShow" @click="leftPanelShow = true">
+                            <IconDoubleRight class="w-4 h-4" />
+                        </NoteCtrlButton>
+                        <div class="mr-4 relative">
+                            <div class="font-bold px-2 min-w-[60px]" style="visibility: hidden;">{{
+                                    noteList[currentNoteId].title
+                            }}</div>
+                            <input type="text" class="absolute left-0 top-0 font-bold w-full outline-none px-2"
+                                maxlength="20" v-model="noteList[currentNoteId].title" @focusout="noteSave">
+                        </div>
+                        <NoteIconButton>
+                            <IconExport class="w-4 h-4" @click="noteExport" />
+                        </NoteIconButton>
+                        <NoteIconButton>
+                            <IconImport class="w-4 h-4" @click="noteImport" />
+                        </NoteIconButton>
+                    </div>
+                    <div class="flex">
+                        <NoteIconButton @click="blockAdd(currentSelectedBlock - 1)">
+                            <IconAddUp class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="blockAdd(currentSelectedBlock)">
+                            <IconAddDown class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="blockMove(currentSelectedBlock, -1)">
+                            <IconUp class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="blockMove(currentSelectedBlock, 1)">
+                            <IconDown class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="blockDelete(currentSelectedBlock)">
+                            <IconTrash class="w-4 h-4" />
+                        </NoteIconButton>
+                    </div>
+                    <div class="flex">
+                        <NoteIconButton v-if="!isDarkMode" @click="(isDarkMode = true)">
+                            <IconSun class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton v-if="isDarkMode" @click="(isDarkMode = false)">
+                            <IconMoon class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="infoPanelShow = !infoPanelShow">
+                            <IconInfo class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton v-if="!isFullscreen" @click="enterFullscreen">
+                            <IconFullscreen class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton v-if="isFullscreen" @click="exitFullscreen">
+                            <IconFullscreenExit class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton>
+                            <IconUser class="w-4 h-4" />
+                        </NoteIconButton>
+                        <NoteIconButton @click="userLogout">
+                            <IconLogout class="w-4 h-4" />
+                        </NoteIconButton>
+                    </div>
                 </div>
             </div>
+            <NoteInfoPanel v-show="infoPanelShow" class="animation-in">
+                <NoteCtrlButton class="absolute top-4 right-4">
+                    <IconClose class="w-4 h-4" @click="(infoPanelShow = false)" />
+                </NoteCtrlButton>
+                <div class="font-bold">笔记信息</div>
+                <div class="text-sm">笔记标题：{{ noteList[currentNoteId].title }}</div>
+                <div class="text-sm">
+                    笔记ID：<span class="hover:text-gray-400"
+                        @click="copyToClipboard(currentNoteId, () => { toast.success('已复制到剪贴板') })">{{
+                                currentNoteId
+                        }}</span>
+                </div>
+                <div class="font-bold">笔记块信息</div>
+                <div class="text-sm">笔记块ID：{{ currentSelectedBlock }}</div>
+                <div class="text-sm">创建者ID：{{ currentNoteData[currentSelectedBlock].blkAuthor }}</div>
+                <div class="text-sm">创建时间：{{ timeFormat(currentNoteData[currentSelectedBlock].blkCreateTime) }}</div>
+                <div class="text-sm">最后编辑：{{ timeFormat(currentNoteData[currentSelectedBlock].blkLastEditTime) }}</div>
+            </NoteInfoPanel>
             <NoteContainer>
                 <div v-for="block, index in currentNoteData" class="mt-4">
                     <NoteBlock :block="block" @selected="blockSelect(index)" @data-change="noteSave"
@@ -89,46 +125,58 @@
 </template>
 
 <script setup lang="ts">
-import NoteContainer from '@/components/Layout/NoteContainer.vue';
-import NoteIconButton from '@/components/Button/NoteIconButton.vue';
-import router from '@/router';
-import { useStore } from '@/stores';
-import Cookies from 'js-cookie';
+import {
+    IconAdd,
+    IconAddUp,
+    IconAddDown,
+    IconDoubleLeft,
+    IconDoubleRight,
+    IconUp,
+    IconDown,
+    IconImport,
+    IconExport,
+    IconFullscreen,
+    IconFullscreenExit,
+    IconInfo,
+    IconClose,
+    IconLogout,
+    IconSearch,
+    IconTrash,
+    IconUser,
+    IconSun,
+    IconMoon
+} from '@/components/Icon';
 import { onMounted, ref, toRefs, watch } from 'vue';
+import NoteBlock from '@/components/NoteBlock.vue';
+import NoteIconButton from '@/components/Button/NoteIconButton.vue';
+import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
+import NoteContainer from '@/components/Layout/NoteContainer.vue';
+import NoteLeftPanel from '@/components/Layout/NoteLeftPanel.vue';
+import NoteInfoPanel from '@/components/Layout/NoteInfoPanel.vue';
+import Cookies from 'js-cookie';
 import { useToast } from 'vue-toastification';
 import { v4 as uuid4 } from 'uuid'
 import hljs from 'highlight.js/lib/common'
-
 import { marked } from 'marked'
+import NProgress from 'nprogress'
 import { BlockData } from '@/core/types';
-import NoteBlock from '@/components/NoteBlock.vue';
-import NoteLeftPanel from '@/components/Layout/NoteLeftPanel.vue';
-import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
-import IconSearch from '@/components/Icon/IconSearch.vue'
-import IconAdd from '@/components/Icon/IconAdd.vue'
-import IconDoubleLeft from '@/components/Icon/IconDoubleLeft.vue'
-import IconDoubleRight from '@/components/Icon/IconDoubleRight.vue'
-import IconTrash from '@/components/Icon/IconTrash.vue';
-import IconExport from '@/components/Icon/IconExport.vue';
-import IconImport from '@/components/Icon/IconImport.vue';
-import IconUp from '@/components/Icon/IconUp.vue';
-import IconDown from '@/components/Icon/IconDown.vue';
-import IconInfo from '@/components/Icon/IconInfo.vue';
-import IconAddUp from '@/components/Icon/IconAddUp.vue';
-import IconAddDown from '@/components/Icon/IconAddDown.vue';
+import router from '@/router';
+import { useStore } from '@/stores';
 import { UserDataGet, UserDataUpdate } from '@/api/user';
 import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
-import NoteNormalButton from '@/components/Button/NoteNormalButton.vue';
-import { timeFormat } from '@/utils';
-import NProgress from 'nprogress'
+import { copyToClipboard, timeFormat } from '@/utils';
 
 const store = useStore()
 const toast = useToast()
 
 const { noteList, currentNoteId, currentNoteData } = toRefs(store)
 const currentSelectedBlock = ref(0)
+
 const leftPanelShow = ref(false)
 const infoPanelShow = ref(false)
+
+const isFullscreen = ref(false)
+const isDarkMode = ref(false)
 
 marked.setOptions({
     highlight: function (code, lang) {
@@ -163,7 +211,9 @@ onMounted(async () => {
     store.networkLoading = false
 })
 
-watch(leftPanelShow, () => { localStorage.setItem('leftPanelShow', leftPanelShow.value ? 'true' : 'false') })
+watch(leftPanelShow, () => {
+    localStorage.setItem('leftPanelShow', leftPanelShow.value ? 'true' : 'false')
+})
 
 function blockSelect(index: number) {
     currentSelectedBlock.value = index
@@ -236,6 +286,7 @@ async function noteAdd() {
     } else {
         currentNoteData.value = []
     }
+    currentSelectedBlock.value = 0
     store.networkLoading = false
 }
 
@@ -262,6 +313,7 @@ async function noteDelete() {
     } else {
         currentNoteData.value = []
     }
+    currentSelectedBlock.value = 0
     store.networkLoading = false
 }
 
@@ -276,14 +328,16 @@ async function noteSwitch(index: number) {
     } else {
         currentNoteData.value = []
     }
+    currentSelectedBlock.value = 0
     NProgress.done()
 }
 
 async function noteSave() {
     NProgress.start()
+    await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteSync(currentNoteId.value, currentNoteData.value)
     if (result.code == 0) {
-        // toast.success('笔记同步成功')
+        // 笔记同步成功
     } else if (result.code = 2) {
         toast.warning(result.msg)
     } else if (result.code = 3) {
@@ -291,6 +345,52 @@ async function noteSave() {
     }
     NProgress.done()
     console.log('save note ' + currentNoteId.value);
+}
+
+function noteImport() {
+    let fileInput = document.createElement('input')
+    fileInput.style.display = 'none'
+    fileInput.type = 'file'
+    fileInput.setAttribute('filename', 'note-*.json')
+    fileInput.accept = 'application/json'
+    document.body.appendChild(fileInput)
+    fileInput.addEventListener('change', () => {
+        if ((fileInput.files as FileList).length > 0) {
+            const reader = new FileReader()
+            reader.onload = () => {
+                currentNoteData.value = JSON.parse(reader.result as string)
+                noteSave()
+            }
+            reader.readAsText((fileInput.files as FileList)[0], 'utf8')
+            document.body.removeChild(fileInput)
+
+        }
+    }, false)
+    fileInput.click()
+}
+
+
+function noteExport() {
+    let noteData = JSON.stringify(currentNoteData.value)
+    let blob = new Blob([noteData], { type: "text/plain;charset=utf-8" })
+    let tmpLink = document.createElement('a')
+    let dataUrl = URL.createObjectURL(blob)
+    tmpLink.download = "note-" + Date.now() + ".json"
+    tmpLink.href = dataUrl
+    document.body.appendChild(tmpLink)
+    tmpLink.click()
+    document.body.removeChild(tmpLink)
+    URL.revokeObjectURL(dataUrl)
+}
+
+function enterFullscreen() {
+    document.documentElement.requestFullscreen()
+    isFullscreen.value = true
+}
+
+function exitFullscreen() {
+    document.exitFullscreen()
+    isFullscreen.value = false
 }
 
 function userLogout() {
@@ -305,3 +405,21 @@ function userLogout() {
 }
 
 </script>
+
+<style scoped>
+.animation-in {
+    animation: show 0.3s;
+}
+
+@keyframes show {
+    0% {
+        opacity: 0;
+        transform: translate(0, -50px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(0, 0px);
+    }
+}
+</style>

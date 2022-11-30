@@ -39,3 +39,13 @@ export function timeFormat(timestamp: number) {
     result += (date.getSeconds() < 10 ? '0' + date.getSeconds() : date.getSeconds());
     return result
 }
+
+export function copyToClipboard(text: string, callback: Function | null = null) {
+    let tmp = document.createElement('input')
+    tmp.value = text
+    document.body.appendChild(tmp)
+    tmp.select()
+    document.execCommand("copy")
+    document.body.removeChild(tmp)
+    callback && callback()
+}
