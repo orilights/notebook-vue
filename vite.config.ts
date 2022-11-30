@@ -1,10 +1,11 @@
-import { defineConfig } from 'vite'
+import { defineConfig, splitVendorChunkPlugin } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import path from 'path'
+import { manualChunksPlugin } from 'vite-plugin-webpackchunkname'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), manualChunksPlugin()],
   resolve: {
     // 配置路径别名
     alias: {

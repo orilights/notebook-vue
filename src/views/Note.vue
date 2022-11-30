@@ -97,9 +97,10 @@ import Cookies from 'js-cookie';
 import { onMounted, ref, toRefs, watch } from 'vue';
 import { useToast } from 'vue-toastification';
 import { v4 as uuid4 } from 'uuid'
-import hljs from 'highlight.js'
+import hljs from 'highlight.js/lib/common'
+
 import { marked } from 'marked'
-import { BlockData, NoteData } from '@/core/types';
+import { BlockData } from '@/core/types';
 import NoteBlock from '@/components/NoteBlock.vue';
 import NoteLeftPanel from '@/components/Layout/NoteLeftPanel.vue';
 import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
@@ -239,7 +240,7 @@ async function noteAdd() {
 }
 
 async function noteDelete() {
-   
+
     let index = Object.keys(noteList.value).indexOf(currentNoteId.value)
     let toDelNote = currentNoteId.value
     if (index + 1 == Object.keys(noteList.value).length) {
