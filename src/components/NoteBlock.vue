@@ -1,11 +1,11 @@
 <template>
     <div class="mb-1 px-5 py-3 rounded-xl box-border border-2 border-transparent transition-all duration-300 hover:shadow-[0_2px_12px_0_rgba(0,0,0,0.2)] dark:hover:shadow-none dark:hover:bg-slate-50/5"
         @click="$emit('selected')" @dblclick="changeMode">
-        <div :class="!editMode ? '' : 'hidden'" class="rendered" v-html="marked.parse(block.blkContent as string)">
+        <div :class="!editMode ? '' : 'hidden'" class="rendered" v-html="marked.parse(blockData.content)">
         </div>
         <div :class="editMode ? '' : 'hidden'">
             <div class="font-bold">编辑模式 <span class="text-gray-400">(点击编辑框外部或双击退出)</span></div>
-            <textarea class="w-full bg-transparent" v-model="(block.blkContent as string)" ref="editbox" @input="resetHeight"
+            <textarea class="w-full bg-transparent" v-model="blockData.content" ref="editbox" @input="resetHeight"
                 @focusout="focusOut"></textarea>
         </div>
     </div>
@@ -15,14 +15,13 @@
 import { BlockData } from '@/core/types';
 import hljs from 'highlight.js'
 import { marked } from 'marked'
-import { BlockList } from 'net';
 import { nextTick, ref } from 'vue';
 
 const props = defineProps<{
-    block: BlockData,
+    blockData: BlockData,
 }>()
 
-const emits = defineEmits(['selected','dataChange'])
+const emits = defineEmits(['selected', 'dataChange'])
 
 const editMode = ref(false)
 const editbox = ref<HTMLElement | null>(null)
@@ -39,7 +38,6 @@ function changeMode(e: Event) {
     if (editMode.value) {
         // 退出编辑模式
         editMode.value = false
-        props.block.blkLastEditTime = Date.now()
         emits('dataChange')
     } else {
         // 进入编辑模式
@@ -56,7 +54,6 @@ function changeMode(e: Event) {
 
 function focusOut() {
     editMode.value = false;
-    props.block.blkLastEditTime = Date.now()
     emits('dataChange')
 }
 

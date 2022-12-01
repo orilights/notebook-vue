@@ -112,15 +112,15 @@
                                 currentNoteId
                         }}</span>
                 </div>
+                <div class="text-sm">创建者ID：{{ noteList[currentNoteId].author }}</div>
+                <div class="text-sm">创建时间：{{ timeFormat(noteList[currentNoteId].createdAt || 0) }}</div>
+                <div class="text-sm">最后编辑：{{ timeFormat(noteList[currentNoteId].updatedAt || 0) }}</div>
                 <div class="font-bold">笔记块信息</div>
                 <div class="text-sm">笔记块ID：{{ currentSelectedBlock }}</div>
-                <div class="text-sm">创建者ID：{{ currentNoteData[currentSelectedBlock].blkAuthor }}</div>
-                <div class="text-sm">创建时间：{{ timeFormat(currentNoteData[currentSelectedBlock].blkCreateTime) }}</div>
-                <div class="text-sm">最后编辑：{{ timeFormat(currentNoteData[currentSelectedBlock].blkLastEditTime) }}</div>
             </NoteInfoPanel>
             <NoteContainer>
                 <div v-for="block, index in currentNoteData" class="mt-4">
-                    <NoteBlock :block="block" @selected="blockSelect(index)" @data-change="noteSave"
+                    <NoteBlock :block-data="block" @selected="blockSelect(index)" @data-change="noteSave"
                         :class="currentSelectedBlock == index ? 'border-gray-300 dark:border-slate-50/20' : ''" />
                 </div>
                 <div class="h-10"></div>
@@ -165,13 +165,13 @@ import { v4 as uuid4 } from 'uuid'
 import hljs from 'highlight.js/lib/common'
 import { marked } from 'marked'
 import NProgress from 'nprogress'
-import { BlockData } from '@/core/types';
 import router from '@/router';
 import { useStore } from '@/stores';
 import { UserDataGet, UserDataUpdate } from '@/api/user';
 import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
 import { copyToClipboard, timeFormat } from '@/utils';
 import NoteTopMenu from '@/components/Layout/NoteTopMenu.vue';
+import { BlockData } from '@/core/types';
 
 const store = useStore()
 const toast = useToast()
@@ -217,7 +217,7 @@ onMounted(async () => {
     }
     const result1 = await NoteGet(currentNoteId.value)
     if (result1.code == 0) {
-        currentNoteData.value = JSON.parse(result1.msg)['data']
+        currentNoteData.value = JSON.parse(result1.msg)['blocks']
     } else {
         currentNoteData.value = []
     }
@@ -251,11 +251,7 @@ function blockMove(index: number, direction: number) {
 
 function blockAdd(index: number) {
     let newBlockData: BlockData = {
-        blkType: 'Markdown',
-        blkContent: '写点什么',
-        blkAuthor: store.userId,
-        blkCreateTime: Date.now(),
-        blkLastEditTime: Date.now()
+        content: '写点什么'
     }
     if (index == -1) {
         currentNoteData.value.splice(0, 0, newBlockData)
@@ -281,21 +277,15 @@ function blockDelete(index: number) {
 
 async function noteAdd() {
     let newNoteId = uuid4()
-    noteList.value[newNoteId] = { tag: [], title: '新笔记' }
+    noteList.value[newNoteId] = { tag: [], title: '新笔记', author: store.userId, createdAt: Date.now(), updatedAt: Date.now() }
     currentNoteId.value = newNoteId
-
     store.networkLoading = true
     let newNoteData: BlockData[] = JSON.parse(await (await fetch('/template/new-note-template.json')).text())
-    let time = Date.now()
-    newNoteData.forEach((v) => {
-        v.blkCreateTime = time
-        v.blkLastEditTime = time
-    })
     await NoteCreate(currentNoteId.value, newNoteData)
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteGet(currentNoteId.value)
     if (result.code == 0) {
-        currentNoteData.value = JSON.parse(result.msg)['data']
+        currentNoteData.value = JSON.parse(result.msg)['blocks']
     } else {
         currentNoteData.value = []
     }
@@ -322,7 +312,7 @@ async function noteDelete() {
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteGet(currentNoteId.value)
     if (result.code == 0) {
-        currentNoteData.value = JSON.parse(result.msg)['data']
+        currentNoteData.value = JSON.parse(result.msg)['blocks']
     } else {
         currentNoteData.value = []
     }
@@ -337,7 +327,7 @@ async function noteSwitch(index: number) {
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteGet(currentNoteId.value)
     if (result.code == 0) {
-        currentNoteData.value = JSON.parse(result.msg)['data']
+        currentNoteData.value = JSON.parse(result.msg)['blocks']
     } else {
         currentNoteData.value = []
     }
@@ -347,6 +337,7 @@ async function noteSwitch(index: number) {
 
 async function noteSave() {
     NProgress.start()
+    noteList.value[currentNoteId.value].updatedAt = Date.now()
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
     const result = await NoteSync(currentNoteId.value, currentNoteData.value)
     if (result.code == 0) {
@@ -356,8 +347,8 @@ async function noteSave() {
     } else if (result.code = 3) {
         toast.error(result.msg)
     }
-    NProgress.done()
     console.log('save note ' + currentNoteId.value);
+    NProgress.done()
 }
 
 function noteImport() {
@@ -409,7 +400,7 @@ function exitFullscreen() {
 function handleSearch() {
     searchResult.value = []
     const queryStr = '(.*?)'
-    let stringArr = searchText.value.replace(/[^0-9a-z\u4E00-\u9FA5]/ig, '').split('')
+    let stringArr = searchText.value.replace(/[^0-9a-z\u4E00-\u9FA5]/ig, '').split('') // 排除数字、字母、中文以外的内容
     let regString = queryStr + stringArr.join(queryStr) + queryStr
     let reg = RegExp(regString, "i");
     Object.values(noteList.value).forEach((value, index) => {

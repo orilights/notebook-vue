@@ -43,7 +43,7 @@ export async function NoteCreate(noteId: string, noteData: BlockData[]): Promise
     }
 
     // 请求
-    const res = await post(apiUrl, { id: noteId, data: noteData })
+    const res = await post(apiUrl, { id: noteId, blocks: noteData })
     if (res.code == 0) {
         result.code = 0
         result.msg = '上传成功'
@@ -73,7 +73,7 @@ export async function NoteSync(noteId: string, noteData: BlockData[]): Promise<R
     }
 
     // 请求
-    const res = await patch(apiUrl + noteId, { data: noteData })
+    const res = await patch(apiUrl + noteId, { blocks: noteData })
     if (res.code == 0) {
         result.code = 0
         result.msg = '同步成功'

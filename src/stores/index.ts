@@ -9,7 +9,7 @@ export const useStore = defineStore('main', {
         userName: '',
         noteList: { '0': { tag: [], title: '' } } as { [id: string]: NoteData },
         currentNoteId: '0',
-        currentNoteData: [{ blkType: 'Markdown', blkContent: '数据加载中', blkAuthor: '', blkCreateTime: 0, blkLastEditTime: 0 }] as BlockData[],
+        currentNoteData: [{ content: '加载中' }] as BlockData[],
         isDarkMode: false
     }),
 })

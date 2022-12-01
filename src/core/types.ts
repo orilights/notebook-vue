@@ -5,17 +5,16 @@ export interface UserData {
     currentNoteId: string
 }
 
-export interface BlockData {
-    blkType: string,
-    blkContent: string,
-    blkAuthor: string,
-    blkCreateTime: number,
-    blkLastEditTime: number
+export interface NoteData {
+    title: string,
+    tag: string[],
+    author?: string,
+    createdAt?: number,
+    updatedAt?: number
 }
 
-export interface NoteData {
-    tag: string[]
-    title: string
+export interface BlockData {
+    content: string,
 }
 
 export interface RequestResult {
