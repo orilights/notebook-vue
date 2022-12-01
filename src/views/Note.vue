@@ -7,17 +7,20 @@
             <div
                 class="mt-[50px] w-full bg-gray-200 dark:bg-[#242424] hover:bg-gray-300 dark:hover:bg-gray-800 p-[8px] rounded-md cursor-text flex items-center space-x-1">
                 <IconSearch class="w-4 h-4" />
-                <input type="text" class="bg-transparent outline-none text-sm" placeholder="搜索" v-model="searchText"
-                    @input="handleSearch">
+                <input type="text" class="bg-transparent outline-none text-sm flex-1" placeholder="搜索"
+                    v-model="searchText" @input="handleSearch">
+                <IconClose v-if="isSearch" class="w-4 h-4 cursor-pointer" @click="searchText = ''" />
             </div>
-            <div class="my-2 font-bold">
-                笔记列表
-                <NoteCtrlButton @click="noteAdd">
-                    <IconAdd class="w-4 h-4" />
-                </NoteCtrlButton>
-                <NoteCtrlButton @click="noteDelete">
-                    <IconTrash class="w-4 h-4" />
-                </NoteCtrlButton>
+            <div class="my-2 font-bold flex items-center space-x-1">
+                <span>{{ isSearch ? '搜索结果' : '笔记列表' }}</span>
+                <template v-if="!isSearch">
+                    <NoteCtrlButton @click="noteAdd">
+                        <IconAdd class="w-4 h-4" />
+                    </NoteCtrlButton>
+                    <NoteCtrlButton @click="noteDelete">
+                        <IconTrash class="w-4 h-4" />
+                    </NoteCtrlButton>
+                </template>
             </div>
             <div
                 class="bg-gray-200 dark:bg-[#242424] rounded-md flex-grow overflow-y-scroll  scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-transparent scrollbar-track-rounded-md scrollbar-thumb-rounded-md">
@@ -29,13 +32,23 @@
                         {{ note.title }}
                     </p>
                 </div>
-                <div v-if="isSearch"
-                    class="px-4 py-2 hover:px-6 hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
-                    v-for="res in searchResult" @click="noteSwitch(res.index); searchText = ''">
-                    <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
-                        {{ res.text }}
-                    </p>
+                <div v-if="isSearch">
+                    <div v-if="(searchResult.length == 0)" class="px-4 py-2">
+                        <p>无搜索结果</p>
+                    </div>
+                    <div class="px-4 py-2 hover:px-6 hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
+                        v-for="res in searchResult"
+                        :class="Object.keys(noteList)[res.index] == currentNoteId ? 'px-6 bg-gray-300 dark:bg-white/10' : ''"
+                        @click="noteSwitch(res.index)">
+                        <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
+                            {{ res.text }}
+                        </p>
+                        <div v-for="tag in res.tag" class="inline-block bg-green-400/40 px-1 rounded-md mr-1 text-sm">
+                            {{ tag }}
+                        </div>
+                    </div>
                 </div>
+
             </div>
         </NoteLeftPanel>
         <div class="w-full h-full flex flex-col">
@@ -86,10 +99,10 @@
                     <NoteIconButton @click="infoPanelShow = !infoPanelShow">
                         <IconInfo class="w-4 h-4" />
                     </NoteIconButton>
-                    <NoteIconButton v-if="!isFullscreen" @click="enterFullscreen">
+                    <NoteIconButton v-if="!isFullscreen" @click="fullscreenEnter">
                         <IconFullscreen class="w-4 h-4" />
                     </NoteIconButton>
-                    <NoteIconButton v-if="isFullscreen" @click="exitFullscreen">
+                    <NoteIconButton v-if="isFullscreen" @click="fullscreenExit">
                         <IconFullscreenExit class="w-4 h-4" />
                     </NoteIconButton>
                     <NoteIconButton>
@@ -105,18 +118,31 @@
                     <IconClose class="w-4 h-4" @click="(infoPanelShow = false)" />
                 </NoteCtrlButton>
                 <div class="font-bold">笔记信息</div>
-                <div class="text-sm">笔记标题：{{ noteList[currentNoteId].title }}</div>
                 <div class="text-sm">
-                    笔记ID：<span class="hover:text-gray-400"
+                    ID：<span class="hover:text-gray-400"
                         @click="copyToClipboard(currentNoteId, () => { toast.success('已复制到剪贴板') })">{{
                                 currentNoteId
                         }}</span>
                 </div>
+                <div class="text-sm">标题：{{ noteList[currentNoteId].title }}</div>
+                <div class="text-sm">
+                    标签：<div v-if="(noteList[currentNoteId].tag.length == 0)"
+                        class="inline-block bg-green-400/40 px-1 rounded-md mr-1">无</div>
+                    <div v-for="tag, index in noteList[currentNoteId].tag"
+                        class="inline-block bg-green-400/40 px-1 rounded-md mr-1">{{ tag }}
+                        <IconClose class="w-3 h-3 inline-block cursor-pointer" @click="tagDel(index)" />
+                    </div>
+                    <input v-if="isAddTag" ref="tagInput" type="text" placeholder="请输入tag名称" maxlength="5"
+                        class="bg-transparent outline-none" @focusout="tagAddCancel">
+                    <NoteCtrlButton @click="isAddTag = true; tagInput?.focus()">
+                        <IconAdd class="w-3 h-3" />
+                    </NoteCtrlButton>
+                </div>
                 <div class="text-sm">创建者ID：{{ noteList[currentNoteId].author }}</div>
                 <div class="text-sm">创建时间：{{ timeFormat(noteList[currentNoteId].createdAt || 0) }}</div>
                 <div class="text-sm">最后编辑：{{ timeFormat(noteList[currentNoteId].updatedAt || 0) }}</div>
-                <div class="font-bold">笔记块信息</div>
-                <div class="text-sm">笔记块ID：{{ currentSelectedBlock }}</div>
+                <div class="font-bold mt-2">笔记块信息</div>
+                <div class="text-sm">块ID：{{ currentSelectedBlock }}</div>
             </NoteInfoPanel>
             <NoteContainer>
                 <div v-for="block, index in currentNoteData" class="mt-4">
@@ -181,14 +207,18 @@ const currentSelectedBlock = ref(0)
 const searchText = ref('')
 const searchResult = ref<{
     text: string,
+    tag: string[],
     index: number
 }[]>([])
 
+const tagInput = ref<HTMLInputElement | null>(null)
 
 const leftPanelShow = ref(false)
 const infoPanelShow = ref(false)
 
 const isFullscreen = ref(false)
+const isAddTag = ref(false)
+
 const isSearch = computed(() => searchText.value != '')
 
 marked.setOptions({
@@ -227,6 +257,28 @@ onMounted(async () => {
 watch(leftPanelShow, () => {
     localStorage.setItem('leftPanelShow', leftPanelShow.value ? 'true' : 'false')
 })
+
+function tagAdd(tagName: string) {
+    if (!noteList.value[currentNoteId.value].tag.includes(tagName)) {
+        noteList.value[currentNoteId.value].tag.push(tagName)
+        noteSave()
+    } else {
+        toast.warning('该tag已存在')
+    }
+}
+
+function tagDel(index: number) {
+    noteList.value[currentNoteId.value].tag.splice(index, 1)
+    noteSave()
+}
+
+function tagAddCancel() {
+    if (tagInput.value?.value != '') {
+        tagAdd(tagInput.value?.value || '')
+    }
+    tagInput.value?.value == ''
+    isAddTag.value = false
+}
 
 function blockSelect(index: number) {
     currentSelectedBlock.value = index
@@ -294,7 +346,6 @@ async function noteAdd() {
 }
 
 async function noteDelete() {
-
     let index = Object.keys(noteList.value).indexOf(currentNoteId.value)
     let toDelNote = currentNoteId.value
     if (index + 1 == Object.keys(noteList.value).length) {
@@ -322,6 +373,9 @@ async function noteDelete() {
 
 async function noteSwitch(index: number) {
     let newNoteId = Object.keys(noteList.value)[index]
+    if (newNoteId == currentNoteId.value) {
+        return
+    }
     currentNoteId.value = newNoteId
     NProgress.start()
     await UserDataUpdate(store.userId, { currentNoteId: currentNoteId.value, noteList: noteList.value })
@@ -387,12 +441,12 @@ function noteExport() {
     URL.revokeObjectURL(dataUrl)
 }
 
-function enterFullscreen() {
+function fullscreenEnter() {
     document.documentElement.requestFullscreen()
     isFullscreen.value = true
 }
 
-function exitFullscreen() {
+function fullscreenExit() {
     document.exitFullscreen()
     isFullscreen.value = false
 }
@@ -405,7 +459,7 @@ function handleSearch() {
     let reg = RegExp(regString, "i");
     Object.values(noteList.value).forEach((value, index) => {
         if (reg.test(value.title + value.tag.join(''))) {
-            searchResult.value.push({ text: value.title, index })
+            searchResult.value.push({ text: value.title, tag: value.tag, index })
         }
     })
 }

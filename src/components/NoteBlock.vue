@@ -1,5 +1,5 @@
 <template>
-    <div class="mb-1 px-5 py-3 rounded-xl box-border border-2 border-transparent transition-all duration-300 hover:shadow-[0_2px_12px_0_rgba(0,0,0,0.2)] dark:hover:shadow-none dark:hover:bg-slate-50/5"
+    <div class="mb-1 px-5 py-3 rounded-xl box-border border-2 border-transparent transition-all duration-500 hover:shadow-[0_2px_12px_0_rgba(0,0,0,0.2)] dark:hover:shadow-none dark:hover:bg-slate-50/5"
         @click="$emit('selected')" @dblclick="changeMode">
         <div :class="!editMode ? '' : 'hidden'" class="rendered" v-html="marked.parse(blockData.content)">
         </div>
@@ -96,7 +96,7 @@ textarea {
 }
 
 code {
-    @apply inline-block p-[2px] mx-[1px] my-0 bg-yellow-100/70 dark:bg-yellow-100/30 rounded-md leading-3;
+    @apply inline-block p-[2px] mx-[1px] my-0 bg-yellow-100/70 dark:bg-yellow-400/30 rounded-md leading-3;
 }
 
 code.hljs {
