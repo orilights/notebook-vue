@@ -1,23 +1,23 @@
 [
     {
-        "content": "## 设计说明\n\n1. 一本笔记本由若干篇笔记组成，一篇笔记由若干个块（Block）组成\n2. 笔记本界面由`左测可收起的目录区`、`顶部菜单区`、`中部浏览区`和`右侧信息区`四部分组成\n3. Block 根据上下顺序编号\n4. 所有数据存储在服务器`users表`和`notes表`中，用户登录后应用会首先尝试读取服务器数据，若数据不存在则通过自带的模板创建笔记"
+        "content": "## ✏️设计说明\n\n1. 一本笔记本由若干篇笔记组成，一篇笔记由若干个块（Block）组成\n2. 笔记本界面由`左测可收起的目录区`、`顶部菜单区`、`中部浏览区`和`右侧信息区`四部分组成\n3. Block 根据上下顺序编号\n4. 所有数据存储在服务器`users表`和`notes表`中，用户登录后应用会首先尝试读取服务器数据，若数据不存在则通过自带的模板创建笔记"
     },
     {
-        "content": "## 使用说明\n\n待完善……"
+        "content": "## 🛠️使用说明\n\n待完善……"
     },
     {
-        "content": "## 补充说明\n\n### 第三方开源库使用说明\n\n| 开源库       | 来源 | 说明                           |\n| :----------- | ---- | ------------------------------ |\n| axios        | npm  | 网络请求                       |\n| highlight.js | npm  | 实现代码高亮功能               |\n| marked       | npm  | 实现 Markdown 解析功能         |\n| uuid         | npm  | UUID（通用唯一识别码）生成工具 |\n| js-cookie    | npm  | 实现对 Cookies 的操作          |\n| crypto-js    | npm  | 密码加密工具库                 |"
+        "content": "## 🤔补充说明\n\n### 第三方开源库使用说明\n\n| 开源库       | 来源 | 说明                           |\n| :----------- | ---- | ------------------------------ |\n| axios        | npm  | 网络请求                       |\n| highlight.js | npm  | 实现代码高亮功能               |\n| marked       | npm  | 实现 Markdown 解析功能         |\n| uuid         | npm  | UUID（通用唯一识别码）生成工具 |\n| js-cookie    | npm  | 实现对 Cookies 的操作          |\n| crypto-js    | npm  | 密码加密工具库                 |"
     },
     {
-        "content": "## 分隔符示例\n\n------"
+        "content": "## ✂️分隔符示例\n\n------"
     },
     {
-        "content": "## 链接示例\n\n[Github仓库](https://github.com/OriLight152/notebook-vue)"
+        "content": "## 🔗链接示例\n\n[Github仓库](https://github.com/OriLight152/notebook-vue)"
     },
     {
-        "content": "## 图片示例\n\n![cbad61708b9db52dbb634666bc77da86_7909437952469488846.jpg](https://webstatic.mihoyo.com/upload/static-resource/2022/09/06/cbad61708b9db52dbb634666bc77da86_7909437952469488846.jpg)\n"
+        "content": "## 🖼️图片示例\n\n![cbad61708b9db52dbb634666bc77da86_7909437952469488846.jpg](https://webstatic.mihoyo.com/upload/static-resource/2022/09/06/cbad61708b9db52dbb634666bc77da86_7909437952469488846.jpg)\n"
     },
     {
-        "content": "## 代码块示例\n\n```js\nmarked.setOptions({\n    highlight: function (code, lang) {\n        const language = hljs.getLanguage(lang) ? lang : 'plaintext';\n        return hljs.highlight(code, { language }).value;\n    },\n    langPrefix: 'hljs language-'\n})\n```"
+        "content": "## 💻代码块示例\n\n```js\nmarked.setOptions({\n    highlight: function (code, lang) {\n        const language = hljs.getLanguage(lang) ? lang : 'plaintext';\n        return hljs.highlight(code, { language }).value;\n    },\n    langPrefix: 'hljs language-'\n})\n```"
     }
 ]
