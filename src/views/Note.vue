@@ -7,7 +7,8 @@
             <div
                 class="mt-[50px] w-full bg-gray-200 dark:bg-[#242424] hover:bg-gray-300 dark:hover:bg-gray-800 p-[8px] rounded-md cursor-text flex items-center space-x-1">
                 <IconSearch class="w-4 h-4" />
-                <input type="text" class="bg-transparent outline-none text-sm" placeholder="搜索">
+                <input type="text" class="bg-transparent outline-none text-sm" placeholder="搜索" v-model="searchText"
+                    @input="handleSearch">
             </div>
             <div class="my-2 font-bold">
                 笔记列表
@@ -21,11 +22,18 @@
             <div
                 class="bg-gray-200 dark:bg-[#242424] rounded-md flex-grow overflow-y-scroll  scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-700 hover:scrollbar-thumb-gray-400 dark:hover:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-transparent scrollbar-track-rounded-md scrollbar-thumb-rounded-md">
                 <div class="px-4 py-2 hover:px-6 hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
-                    v-for="note, index in Object.values(noteList)"
+                    v-if="!isSearch" v-for="note, index in Object.values(noteList)"
                     :class="Object.keys(noteList)[index] == currentNoteId ? 'px-6 bg-gray-300 dark:bg-white/10' : ''"
                     @click="noteSwitch(index)">
                     <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
                         {{ note.title }}
+                    </p>
+                </div>
+                <div v-if="isSearch"
+                    class="px-4 py-2 hover:px-6 hover:bg-gray-300 dark:hover:bg-white/10 transition-all"
+                    v-for="res in searchResult" @click="noteSwitch(res.index); searchText = ''">
+                    <p class="w-full overflow-ellipsis whitespace-nowrap overflow-hidden">
+                        {{ res.text }}
                     </p>
                 </div>
             </div>
@@ -42,7 +50,7 @@
                         }}</div>
                         <input type="text"
                             class="absolute left-0 top-0 font-bold w-full outline-none px-2 bg-transparent"
-                            maxlength="20" v-model="noteList[currentNoteId].title" @focusout="noteSave">
+                            maxlength="25" v-model="noteList[currentNoteId].title" @focusout="noteSave">
                     </div>
                     <NoteIconButton>
                         <IconExport class="w-4 h-4" @click="noteExport" />
@@ -144,7 +152,7 @@ import {
     IconSun,
     IconMoon
 } from '@/components/Icon';
-import { onMounted, ref, toRefs, watch } from 'vue';
+import { computed, onMounted, ref, toRefs, watch } from 'vue';
 import NoteBlock from '@/components/NoteBlock.vue';
 import NoteIconButton from '@/components/Button/NoteIconButton.vue';
 import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
@@ -170,11 +178,18 @@ const toast = useToast()
 
 const { noteList, currentNoteId, currentNoteData, isDarkMode } = toRefs(store)
 const currentSelectedBlock = ref(0)
+const searchText = ref('')
+const searchResult = ref<{
+    text: string,
+    index: number
+}[]>([])
+
 
 const leftPanelShow = ref(false)
 const infoPanelShow = ref(false)
 
 const isFullscreen = ref(false)
+const isSearch = computed(() => searchText.value != '')
 
 marked.setOptions({
     highlight: function (code, lang) {
@@ -389,6 +404,19 @@ function enterFullscreen() {
 function exitFullscreen() {
     document.exitFullscreen()
     isFullscreen.value = false
+}
+
+function handleSearch() {
+    searchResult.value = []
+    const queryStr = '(.*?)'
+    let stringArr = searchText.value.replace(/[^0-9a-z\u4E00-\u9FA5]/ig, '').split('')
+    let regString = queryStr + stringArr.join(queryStr) + queryStr
+    let reg = RegExp(regString, "i");
+    Object.values(noteList.value).forEach((value, index) => {
+        if (reg.test(value.title + value.tag.join(''))) {
+            searchResult.value.push({ text: value.title, index })
+        }
+    })
 }
 
 function userLogout() {

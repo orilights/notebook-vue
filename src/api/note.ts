@@ -2,6 +2,7 @@ import { BlockData, NoteData, RequestResult } from "@/core/types"
 import { get, http_delete, patch, post } from "@/utils/requests"
 
 const apiUrl = 'https://db-api.amarea.cn/notes/'
+// const apiUrl = 'http://192.168.31.100:3000/notes/'
 
 export async function NoteGet(noteId: string): Promise<RequestResult> {
     // 定义返回数据

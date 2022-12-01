@@ -1,8 +1,8 @@
 <template>
   <div class="relative w-[100vw] h-[100vh]" :class="isDarkMode ? 'dark' : ''">
     <div v-if="networkLoading"
-      class="absolute w-full h-full flex items-center justify-center z-40 bg-white bg-opacity-80 select-none back">
-      <img class="w-20 h-20" src="./assets/loading_black.svg">
+      class="absolute w-full h-full flex items-center justify-center z-40 bg-white/20 dark:bg-black/40 select-none back">
+      <img class="w-20 h-20" :src="isDarkMode ? '/assets/loading_white.svg' : '/assets/loading_black.svg'">
     </div>
     <RouterView />
   </div>

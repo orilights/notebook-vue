@@ -3,6 +3,7 @@ import { get, patch, post } from "@/utils/requests"
 import { passwordHash } from "../utils"
 
 const apiUrl = 'https://db-api.amarea.cn/users/'
+// const apiUrl = 'http://192.168.31.100:3000/users/'
 
 export async function UserLogin(userId: string, userPwd: string): Promise<RequestResult> {
     // 定义返回数据
