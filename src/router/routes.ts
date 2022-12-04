@@ -19,10 +19,6 @@ const routes: Array<RouteRecordRaw> = [
         name: 'forget-password',
         component: () => import(/* webpackChunkName: "user" */ '@views/ForgetPassword.vue'),
     }, {
-        path: '/edit/name',
-        name: 'edit-name',
-        component: () => import(/* webpackChunkName: "user" */ '@views/EditName.vue'),
-    }, {
         path: '/user/editpassword',
         name: 'edit-password',
         component: () => import(/* webpackChunkName: "user" */ '@views/EditPassword.vue'),
