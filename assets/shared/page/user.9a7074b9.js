@@ -1,0 +1,1 @@
+import{k as o,o as r,f as t,r as a}from"../../vendor.2eff74f4.js";const n={class:"transition-colors px-4 py-1 mr-2 border border-black dark:border-white rounded-lg hover:bg-black dark:hover:bg-white/20 hover:text-white"},d=o({__name:"NormalButton",setup(s){return(e,c)=>(r(),t("button",n,[a(e.$slots,"default")]))}});export{d as _};
