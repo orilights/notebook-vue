@@ -105,7 +105,7 @@
                     <NoteIconButton v-if="isFullscreen" @click="fullscreenExit">
                         <IconFullscreenExit class="w-4 h-4" />
                     </NoteIconButton>
-                    <NoteIconButton>
+                    <NoteIconButton @click="(userProfileShow = true)">
                         <IconUser class="w-4 h-4" />
                     </NoteIconButton>
                     <NoteIconButton @click="userLogout">
@@ -153,7 +153,11 @@
             </NoteContainer>
         </div>
     </div>
-
+    <CenterContainer v-if="userProfileShow" class="absolute top-0 z-40 w-screen h-screen backdrop-blur-sm">
+        <PopupContainer>
+            <UserProfile @close="(userProfileShow = false)" />
+        </PopupContainer>
+    </CenterContainer>
 </template>
 
 <script setup lang="ts">
@@ -180,24 +184,27 @@ import {
 } from '@/components/Icon';
 import { computed, onMounted, ref, toRefs, watch } from 'vue';
 import NoteBlock from '@/components/NoteBlock.vue';
-import NoteIconButton from '@/components/Button/NoteIconButton.vue';
-import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
+import UserProfile from '@/components/UserProfile.vue';
 import NoteContainer from '@/components/Layout/NoteContainer.vue';
 import NoteLeftPanel from '@/components/Layout/NoteLeftPanel.vue';
 import NoteInfoPanel from '@/components/Layout/NoteInfoPanel.vue';
-import Cookies from 'js-cookie';
-import { useToast } from 'vue-toastification';
-import { v4 as uuid4 } from 'uuid'
-import hljs from 'highlight.js/lib/common'
-import { marked } from 'marked'
-import NProgress from 'nprogress'
-import router from '@/router';
-import { useStore } from '@/stores';
-import { UserDataGet, UserDataUpdate } from '@/api/user';
-import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
-import { copyToClipboard, timeFormat } from '@/utils';
+import CenterContainer from '@/components/Layout/CenterContainer.vue';
+import PopupContainer from '@/components/Layout/PopupContainer.vue';
 import NoteTopMenu from '@/components/Layout/NoteTopMenu.vue';
+import NoteCtrlButton from '@/components/Button/NoteCtrlButton.vue';
+import NoteIconButton from '@/components/Button/NoteIconButton.vue';
+import { NoteCreate, NoteDelete, NoteGet, NoteSync } from '@/api/note';
+import { UserDataGet, UserDataUpdate } from '@/api/user';
+import { copyToClipboard, timeFormat } from '@/utils';
 import { BlockData } from '@/core/types';
+import { useStore } from '@/stores';
+import router from '@/router';
+import { useToast } from 'vue-toastification';
+import hljs from 'highlight.js/lib/common'
+import { v4 as uuid4 } from 'uuid'
+import NProgress from 'nprogress'
+import Cookies from 'js-cookie';
+import { marked } from 'marked'
 
 const store = useStore()
 const toast = useToast()
@@ -215,6 +222,7 @@ const tagInput = ref<HTMLInputElement | null>(null)
 
 const leftPanelShow = ref(false)
 const infoPanelShow = ref(false)
+const userProfileShow = ref(false)
 
 const isFullscreen = ref(false)
 const isAddTag = ref(false)
@@ -462,15 +470,14 @@ function handleSearch() {
             searchResult.value.push({ text: value.title, tag: value.tag, index })
         }
     })
+    console.log(searchResult.value);
 }
 
 function userLogout() {
     store.login = false
     store.userId = ''
-    store.userName = ''
     Cookies.remove('login')
     Cookies.remove('userid')
-    Cookies.remove('username')
     toast.success('注销成功')
     router.push('/login')
 }

@@ -11,19 +11,20 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
     const store = useStore()
+    const toHome = ['/login', '/register', '/login/forgetpassword'] // 登录后不允许访问
+    const whiteList = ['/login', '/register', '/login/forgetpassword', '/404'] // 不检查登录状态
     if (!store.login) {
         if (Cookies.get('login') == '1') {
             store.login = true
             store.userId = Cookies.get('userid') || '获取昵称失败'
-            store.userName = Cookies.get('username') || '获取昵称失败'
         }
     }
-    if (to.path == '/login' || to.path == '/register') {
+    if (toHome.includes(to.path)) {
         if (store.login) {
             return '/home'
         }
     }
-    if (to.path != '/login' && to.path != '/404' && to.path != '/register') {
+    if (!whiteList.includes(to.path)) {
         if (!store.login) {
             return '/login'
         }

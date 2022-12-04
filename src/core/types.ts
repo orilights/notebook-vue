@@ -1,3 +1,11 @@
+export interface UserProfile {
+    id: string,
+    name: string,
+    sex: string,
+    phone:string,
+    email: string
+}
+
 export interface UserData {
     noteList: {
         [id: string]: NoteData

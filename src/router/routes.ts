@@ -14,18 +14,26 @@ const routes: Array<RouteRecordRaw> = [
         path: '/register',
         name: 'register',
         component: () => import(/* webpackChunkName: "user" */ '@views/Register.vue'),
+    },{
+        path: '/login/forgetpassword',
+        name: 'forget-password',
+        component: () => import(/* webpackChunkName: "user" */ '@views/ForgetPassword.vue'),
     }, {
         path: '/edit/name',
         name: 'edit-name',
         component: () => import(/* webpackChunkName: "user" */ '@views/EditName.vue'),
     }, {
-        path: '/edit/password',
+        path: '/user/editpassword',
         name: 'edit-password',
         component: () => import(/* webpackChunkName: "user" */ '@views/EditPassword.vue'),
+    },{
+        path: '/user/deleteaccount',
+        name: 'user-delete-account',
+        component: () => import(/* webpackChunkName: "user" */ '@views/DeleteAccount.vue')
     }, {
         path: '/404',
         name: '404',
-        component: () => import(/* webpackChunkName: "page404" */ '@views/Page404.vue'),
+        component: () => import(/* webpackChunkName: "page" */ '@views/Page404.vue'),
     }, {
         path: '/',
         redirect: '/note',

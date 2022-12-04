@@ -10,10 +10,15 @@
                 <span>密码：</span>
                 <TextEditbox type="password" v-model="userPwd" place-holder="请输入密码" />
             </div>
-            <div class="button-group mt-6 flex justify-center">
+            <div class="mt-6 flex justify-center">
                 <NormalButton @click="userLogin">登录</NormalButton>
+            </div>
+            <div class="mt-4 flex justify-between">
                 <RouterLink to="/register">
-                    <NormalButton>前往注册&gt;</NormalButton>
+                    <a>前往注册</a>
+                </RouterLink>
+                <RouterLink to="/login/forgetpassword">
+                    <a>忘记密码</a>
                 </RouterLink>
             </div>
         </PopupContainer>
@@ -26,12 +31,11 @@ import router from '@/router';
 import { useStore } from '@/stores';
 import { useToast } from 'vue-toastification';
 import Cookies from 'js-cookie';
-import * as Utils from '@/utils';
 import { UserLogin } from '@/api/user';
+import CenterContainer from '@/components/Layout/CenterContainer.vue';
 import PopupContainer from '@/components/Layout/PopupContainer.vue';
 import TextEditbox from '@/components/TextEditbox.vue';
 import NormalButton from '@/components/Button/NormalButton.vue';
-import CenterContainer from '@/components/Layout/CenterContainer.vue';
 
 const store = useStore()
 const toast = useToast()
@@ -40,11 +44,11 @@ const userId = ref('')
 const userPwd = ref('')
 
 async function userLogin() {
-    if (userId.value == '') {
+    if (userId.value.trim() == '') {
         toast.warning('账号不可为空')
         return 0
     }
-    if (userPwd.value == '') {
+    if (userPwd.value.trim() == '') {
         toast.warning('密码不可为空')
         return 0
     }
@@ -55,10 +59,8 @@ async function userLogin() {
         toast.success('登录成功')
         store.login = true
         store.userId = userId.value
-        store.userName = result.msg
         Cookies.set('login', '1', { expires: 7 })
         Cookies.set('userid', userId.value, { expires: 7 })
-        Cookies.set('username', result.msg, { expires: 7 })
         router.push('/')
     } else if (result.code = 2) {
         toast.warning(result.msg)
@@ -67,5 +69,4 @@ async function userLogin() {
     }
     store.networkLoading = false
 }
-
 </script>

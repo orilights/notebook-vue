@@ -147,3 +147,36 @@ export async function http_delete(url: string) {
 
     return result
 }
+
+export async function post_email(url: string, body: any) {
+    let result: RequestResult = {
+        code: -1,
+        msg: ''
+    }
+
+    let response: Response
+    try {
+        response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Application-Token': '$dvQRDjeu!P4p8p9P%'
+            },
+            body: body
+        })
+    } catch (err) {
+        result.code = -1
+        result.msg = '服务器或网络错误'
+        return result
+    }
+
+    if (!response.ok) {
+        result.code = response.status
+        result.msg = await response.text()
+        return result
+    }
+
+    result.code = 0
+    result.msg = await response.text()
+
+    return result
+}
